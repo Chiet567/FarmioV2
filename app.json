@@ -48,8 +48,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "supabaseUrl": "https://weaycioahsuhucskpozg .supabase.co",
-      "supabaseAnonKey": "eyJhbGciOiJIUzI1 NilsInR5cC I6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz ZSIsInJIZil6IndlYXljaW9haHN1aHVjc2t wb3pnliwicm9sZSI6ImFub24iLCJpYXQ iOjE3NzQ1NTI3NzIsImV4cCI6MjA5MD EyODc3Mn0.LcRNXq4Ou-Lfl41C53Cuv EDzL6L17PROsUpBkltSMos"
-    }
+      "supabaseUrl": "",
+      "supabaseAnonKey": "  "  }
   }
 }
