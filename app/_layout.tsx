@@ -1,14 +1,14 @@
-import { Slot } from "expo-router";
+// app/_layout.tsx
+import { Slot, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "../src/authcontext";
 import { ThemeProvider } from "../src/themecontext";
 
-// --------------------------------------------
-// PROTECTION DES ROUTES
-// --------------------------------------------
 const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const segments = useSegments();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -16,18 +16,35 @@ const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // ici tu peux garder ton useEffect de navigation...
+  useEffect(() => {
+    if (!isReady || isLoading) return;
+
+    const firstSegment  = segments[0];
+    const secondSegment = segments[1] || "";
+    const inAuthGroup   = firstSegment === "screens";
+    const inTabsGroup   = firstSegment === "(tabs)";
+
+    const protectedScreens = ["addproduit", "forgetpassword", "profilpro", "admindashboard"];
+    const inProtectedScreen = inAuthGroup && protectedScreens.includes(secondSegment);
+
+    if (!user && !inAuthGroup) {
+      router.replace("/screens/loginscreen");
+    } else if (user) {
+      // Admin → admin dashboard
+      if (user.role === "admin" && !inAuthGroup) {
+        router.replace("/screens/admindashboard");
+        return;
+      }
+      // All other logged-in users → tabs
+      if (!inTabsGroup && !inProtectedScreen) {
+        router.replace("/(tabs)");
+      }
+    }
+  }, [user, segments, isReady, isLoading]);
 
   if (!isReady || isLoading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#16a34a",
-        }}
-      >
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#16a34a" }}>
         <ActivityIndicator size="large" color="#fff" />
       </View>
     );
@@ -36,26 +53,18 @@ const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// --------------------------------------------
-// APP LAYOUT
-// --------------------------------------------
-const AppLayout = () => {
-  return (
-    <RouteGuard>
-      <Slot />
-    </RouteGuard>
-  );
-};
+const AppLayout = () => (
+  <RouteGuard>
+    <Slot />
+  </RouteGuard>
+);
 
-// --------------------------------------------
-// ROOT LAYOUT
-// --------------------------------------------
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
+    <ThemeProvider>
+      <AuthProvider>
         <AppLayout />
-      </ThemeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
